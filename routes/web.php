@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\Member;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MembershipPlanController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,6 +15,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
     Route::resource('members', MemberController::class);
+    Route::resource('plans', MembershipPlanController::class);
 });
 
 
