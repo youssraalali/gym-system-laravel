@@ -29,4 +29,5 @@ Route::get('/gym', function () {
     return view('gym');
 });
 
+
 require __DIR__.'/auth.php';

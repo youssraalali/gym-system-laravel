@@ -42,7 +42,9 @@
                                 </td>
                                 <td class="px-6 py-4">{{ $member->email }}</td>
                                 <td class="px-6 py-4">{{ $member->phone_number }}</td>
-                                <td class="px-6 py-4">{{ $member->membershipPlan->name }}</td>
+                                <td class="px-6 py-4">
+                                    {{ $member->membershipPlan?->name ?? 'No plan assigned' }}
+                                </td>
                                 <td class="px-6 py-4">{{ $member->membership_start_date }}</td>
                                 <td class="px-6 py-4">
                                     @if($member->status)

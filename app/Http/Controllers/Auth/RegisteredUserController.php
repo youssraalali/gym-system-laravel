@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Models\Member;
 
 class RegisteredUserController extends Controller
 {
@@ -46,6 +47,12 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        $member = Member::create([
+            'full_name' => $request->name,
+            'email' => $request->email,
+            'user_id' => $user->id
+        ]);
+
+        return redirect('gym');
     }
 }

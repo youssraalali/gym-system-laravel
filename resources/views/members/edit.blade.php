@@ -47,7 +47,7 @@
                                     <label for="membership_plan_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Membership Plan</label>
                                     <select name="membership_plan_id" id="membership_plan_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                         <option value="">Select a plan</option>
-                                        <option value="{{ $member->membership_plan_id }}" selected>{{ $member->membershipPlan->name }}</option>
+                                        <option value="{{ $member->membership_plan_id }}" selected>{{ $member->membershipPlan?->name ?? 'No plan assigned' }}</option>
                                         @foreach($plans as $plan)
                                         @if($plan->id != $member->membership_plan_id)
                                         <option value="{{ $plan->id }}">{{ $plan->name }}</option>
