@@ -18,7 +18,7 @@ class MemberController extends Controller
     public function index()
     {
         $members = Member::all();
-        return view('members.index', compact('members'));
+        return view('admin.members.index', compact('members'));
     }
 
     /**
@@ -27,7 +27,7 @@ class MemberController extends Controller
     public function create()
     {
         $plans = MembershipPlan::all();
-        return view('members.create', compact('plans'));
+        return view('admin.members.create', compact('plans'));
     }
 
     /**
@@ -65,7 +65,7 @@ class MemberController extends Controller
     public function show(string $id)
     {
         $member = Member::findOrFail($id);
-        return view('members.show', compact('member'));
+        return view('admin.members.show', compact('member'));
     }
 
     /**
@@ -75,7 +75,7 @@ class MemberController extends Controller
     {
         $member = Member::findOrFail($id);
         $plans = MembershipPlan::all();
-        return view('members.edit', compact('member', 'plans'));
+        return view('admin.members.edit', compact('member', 'plans'));
     }
 
     /**
@@ -86,7 +86,7 @@ class MemberController extends Controller
         $member = Member::findOrFail($id);
         $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email|unique:members,email,' . $member->id,
+            'email' => 'required|email|unique:members,email,' . $member->id. '|unique:users,email,' . ($member->user_id),
             'phone_number' => 'required|string|max:20',
             'membership_start_date' => 'required|date',
             'membership_plan_id' => 'required|exists:membership_plans,id',

@@ -13,7 +13,7 @@ class MembershipPlanController extends Controller
     public function index()
     {
         $plans = MembershipPlan::all();
-        return view('plans.index', compact('plans'));
+        return view('admin.plans.index', compact('plans'));
     }
 
     /**
@@ -21,7 +21,7 @@ class MembershipPlanController extends Controller
      */
     public function create()
     {
-        return view('plans.create');
+        return view('admin.plans.create');
     }
 
     /**
@@ -44,7 +44,7 @@ class MembershipPlanController extends Controller
     public function show(string $id)
     {
         $plan = MembershipPlan::findOrFail($id);
-        return view('plans.show', compact('plan'));
+        return view('admin.plans.show', compact('plan'));
     }
 
     /**
@@ -53,7 +53,7 @@ class MembershipPlanController extends Controller
     public function edit(string $id)
     {
         $plan = MembershipPlan::findOrFail($id);
-        return view('plans.edit', compact('plan'));
+        return view('admin.plans.edit', compact('plan'));
     }
 
     /**
