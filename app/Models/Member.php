@@ -24,4 +24,9 @@ class Member extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function planRequests()
+    {
+        return $this->hasMany(PlanRequest::class);
+    }
 }

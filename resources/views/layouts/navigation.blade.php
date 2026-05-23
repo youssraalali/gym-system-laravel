@@ -11,6 +11,8 @@
                 </div>
 
                 <!-- Navigation Links -->
+                @if (Auth::user()->role == 'admin')
+
                 <div class="hidden space-x-10 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
@@ -24,6 +26,14 @@
                         {{ __('Plans') }}
                     </x-nav-link>
                 </div>
+
+                @elseif (Auth::user()->role == 'member')
+                <div class="hidden space-x-10 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('member.portal')" :active="request()->routeIs('member.portal')">
+                        {{ __('My Portal') }}
+                    </x-nav-link>
+                </div>
+                @endif
             </div>
 
             <!-- Settings Dropdown -->
@@ -51,7 +61,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -97,7 +107,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

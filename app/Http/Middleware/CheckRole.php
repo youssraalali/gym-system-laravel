@@ -17,7 +17,8 @@ class CheckRole
     public function handle(Request $request, Closure $next, string $role): Response
     {
         if (!Auth::check() || Auth::user()->role !== $role) {
-            return redirect('/gym')->with('error', 'You do not have permission to access this page.');
+        $redirectRoute = $role === 'admin' ? 'admin.dashboard' : 'member.portal';
+        return redirect()->route($redirectRoute)->with('error', 'You do not have permission to access this page.');
         }
 
         return $next($request);

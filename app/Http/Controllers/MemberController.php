@@ -9,9 +9,23 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
+use App\Models\PlanRequest;
 
 class MemberController extends Controller
 {
+    public function dashboard(Request $request)
+{
+    $query = PlanRequest::with(['member', 'membershipPlan']);
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    $planRequests = $query->latest()->get();
+
+    return view('admin.dashboard', compact('planRequests'));
+}
     /**
      * Display a listing of the resource.
      */

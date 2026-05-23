@@ -16,4 +16,9 @@ class MembershipPlan extends Model
     {
         return $this->hasMany(Member::class);
     }
+
+    public function planRequests()
+    {
+        return $this->hasMany(PlanRequest::class, 'plan_id');
+    }
 }

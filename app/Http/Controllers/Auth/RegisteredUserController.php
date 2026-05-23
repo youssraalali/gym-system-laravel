@@ -53,6 +53,6 @@ class RegisteredUserController extends Controller
             'user_id' => $user->id
         ]);
 
-        return redirect('gym');
+        return redirect()->route(Auth::user()->role === 'admin' ? 'admin.dashboard' : 'member.portal');
     }
 }
