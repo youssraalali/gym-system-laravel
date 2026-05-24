@@ -1,5 +1,8 @@
 {
-    "php": {
-        "version": "8.4"
-    }
+  "providers": [
+    "php"
+  ],
+  "variables": {
+    "PHP_VERSION": "8.4"
+  }
 }
