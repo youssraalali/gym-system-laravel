@@ -2194,12 +2194,12 @@
     <nav class="flex items-center justify-end gap-4">
 
         @guest
-            <a href="{{ route('login') }}">
+            <a href="{{ route('login') }}" class="px-4 py-1.5 bg-blue-700 text-white rounded-md hover:bg-blue-500 transition">
                 Login
             </a>
 
             @if (Route::has('register'))
-                <a href="{{ route('register') }}">
+                <a href="{{ route('register') }}" class="px-4 py-1.5 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition">
                     Register
                 </a>
             @endif
@@ -2208,7 +2208,7 @@
         @auth
             <a href="{{ Auth::user()->role === 'admin'
                 ? route('admin.dashboard')
-                : route('member.portal') }}">
+                : route('member.portal') }}" class="px-4 py-1.5 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition">
                 Dashboard
             </a>
         @endauth
