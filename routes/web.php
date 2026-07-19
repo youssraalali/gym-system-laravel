@@ -8,9 +8,19 @@ use App\Http\Controllers\MembershipPlanController;
 use App\Http\Controllers\MemberPortalController;
 use App\Http\Controllers\PlanRequestController;
 use App\Models\PlanRequest;
+use App\Http\Resources\UserCollection;
+use App\Models\User;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/users', function () {
+    return UserCollection::collection(User::all()->keyBy->id);
+});
+
+Route::get('/user/{id}', function (string $id) {
+    return new UserCollection([User::findOrFail($id)]);
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
