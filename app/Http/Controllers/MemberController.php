@@ -67,7 +67,7 @@ class MemberController extends Controller
 
             $member = Member::create(array_merge($request->only(['full_name', 'email', 'phone_number', 'membership_start_date', 'membership_plan_id']), ['user_id' => $user->id]));
 
-            Mail::to($request->email)->send(new \App\Mail\MemberCredentials($member, $password));
+            Mail::to($request->email)->queue(new \App\Mail\MemberCredentials($member, $password));
 
 
             return redirect()->route('members.index')->with('success', 'Member created successfully.');
