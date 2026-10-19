@@ -16,10 +16,28 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!Auth::check() || Auth::user()->role !== $role) {
-        $redirectRoute = $role === 'admin' ? 'admin.dashboard' : 'member.portal';
-        return redirect()->route($redirectRoute)->with('error', 'You do not have permission to access this page.');
+        if (!Auth::check()) {
+
+        if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            return redirect()->route('login')->with('message', 'Please log in to access this page.');
+
         }
+
+        if (Auth::user()->role !== $role) {
+
+        if ($request->expectsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+
+            $redirectRoute = $role === 'admin' ? 'admin.dashboard' : 'member.portal';
+
+            return redirect()->route($redirectRoute)->with('error', 'You do not have permission to access this page.');
+
+            }
+
 
         return $next($request);
     }
