@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\MemberFactory;
 
 class Member extends Model
 {
+    /** @use HasFactory<MemberFactory> */
+    use HasFactory;
     protected $fillable = [
         'full_name',
         'email',
