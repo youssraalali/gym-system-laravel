@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use Laravel\Sanctum\Sanctum;
 use App\Models\Member;
 use App\Models\MembershipPlan;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class MemberTest extends TestCase
 {
@@ -19,7 +19,7 @@ class MemberTest extends TestCase
 
         $user = User::factory()->create(
             [
-                'role' => 'admin'
+                'role' => 'admin',
             ]
         );
         Sanctum::actingAs($user, ['*']);
@@ -45,7 +45,7 @@ class MemberTest extends TestCase
             'email' => 'john.doe@example.com',
             'phone_number' => '1234567890',
             'membership_start_date' => '2023-01-01',
-            'membership_plan_id' => $membership_plan_id
+            'membership_plan_id' => $membership_plan_id,
         ];
 
         $response = $this->postJson('/api/members', $payload);
@@ -54,7 +54,7 @@ class MemberTest extends TestCase
 
         $this->assertDatabaseHas('members', [
             'email' => 'john.doe@example.com',
-            'membership_plan_id' => $plan->id
+            'membership_plan_id' => $plan->id,
         ]);
     }
 
@@ -73,13 +73,12 @@ class MemberTest extends TestCase
             'email' => $existing->email,
             'phone_number' => '0987654321',
             'membership_start_date' => '2023-02-01',
-            'membership_plan_id' => $existing->membership_plan_id
+            'membership_plan_id' => $existing->membership_plan_id,
         ];
         $response = $this->postJson('/api/members', $payload);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
     }
-
 
     public function test_admin_cannot_create_member_with_nonexistent_plan(): void
     {
@@ -88,7 +87,7 @@ class MemberTest extends TestCase
             'email' => 'alice.smith@example.com',
             'phone_number' => '5551234567',
             'membership_start_date' => '2023-03-01',
-            'membership_plan_id' => 9999
+            'membership_plan_id' => 9999,
         ];
         $response = $this->postJson('/api/members', $payload);
 
@@ -123,7 +122,7 @@ class MemberTest extends TestCase
             'phone_number' => '9876543210',
             'status' => true,
             'membership_start_date' => '2023-04-01',
-            'membership_plan_id' => $member->membership_plan_id
+            'membership_plan_id' => $member->membership_plan_id,
         ];
 
         $response = $this->putJson("/api/members/{$member->id}", $payload);
@@ -131,11 +130,10 @@ class MemberTest extends TestCase
             ->assertJsonPath('member.full_name', 'Updated Name')
             ->assertJsonPath('message', 'Member updated successfully');
 
-
         $this->assertDatabaseHas('members', [
             'id' => $member->id,
             'full_name' => 'Updated Name',
-            'email' => 'updated.email@example.com'
+            'email' => 'updated.email@example.com',
         ]);
     }
 
@@ -149,7 +147,7 @@ class MemberTest extends TestCase
             'phone_number' => '4567890123',
             'status' => true,
             'membership_start_date' => '2023-05-01',
-            'membership_plan_id' => $member->membership_plan_id
+            'membership_plan_id' => $member->membership_plan_id,
         ];
         $response = $this->putJson("/api/members/{$member->id}", $payload);
         $response->assertStatus(422)
@@ -157,22 +155,22 @@ class MemberTest extends TestCase
     }
 
     public function test_admin_can_update_member_keeping_same_email(): void
-{
-    $member = Member::factory()->create();
+    {
+        $member = Member::factory()->create();
 
-    $payload = [
-        'full_name' => 'Updated Name',
-        'email' => $member->email,
-        'phone_number' => '9876543210',
-        'status' => true,
-        'membership_start_date' => '2023-04-01',
-        'membership_plan_id' => $member->membership_plan_id,
-    ];
+        $payload = [
+            'full_name' => 'Updated Name',
+            'email' => $member->email,
+            'phone_number' => '9876543210',
+            'status' => true,
+            'membership_start_date' => '2023-04-01',
+            'membership_plan_id' => $member->membership_plan_id,
+        ];
 
-    $response = $this->putJson("/api/members/{$member->id}", $payload);
+        $response = $this->putJson("/api/members/{$member->id}", $payload);
 
-    $response->assertStatus(200);
-}
+        $response->assertStatus(200);
+    }
 
     public function test_admin_can_delete_member(): void
     {
@@ -180,8 +178,143 @@ class MemberTest extends TestCase
         $response = $this->deleteJson("/api/members/{$member->id}");
         $response->assertStatus(200);
         $this->assertDatabaseMissing('members', [
-            'id' => $member->id
+            'id' => $member->id,
         ]);
     }
 
+    public function test_search_returns_only_members_matching_the_term(): void
+    {
+        Member::factory()->create(['full_name' => 'zed', 'email' => 'zed@example.com']);
+        Member::factory()->create(['full_name' => 'mia', 'email' => 'mia@example.com']);
+        Member::factory()->create(['full_name' => 'omar', 'email' => 'omr@example.com']);
+
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+        $response = $this->getJson('/api/members?search=zed');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.full_name', 'zed');
+    }
+
+    public function test_search_returns_only_members_matching_the_email(): void
+    {
+        Member::factory()->create(['full_name' => 'omar', 'email' => 'zed.fan@example.com']);
+        Member::factory()->create(['full_name' => 'mia', 'email' => 'mi@example.com']);
+
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+        $response = $this->getJson('/api/members?search=zed');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.full_name', 'omar');
+    }
+
+    public function test_plan_filter_returns_only_members_with_the_specified_plan(): void
+    {
+
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+
+        $monthlyPlan = MembershipPlan::factory()->create(['name' => 'Monthly']);
+        $yearlyPlan = MembershipPlan::factory()->create(['name' => 'Yearly']);
+        Member::factory()->create(['full_name' => 'zed', 'membership_plan_id' => $monthlyPlan->id]);
+        Member::factory()->create(['full_name' => 'mia', 'membership_plan_id' => $yearlyPlan->id]);
+
+        $response = $this->getJson('/api/members?plan=Monthly');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.full_name', 'zed')
+            ->assertJsonMissingExact(['full_name' => 'mia']);
+
+    }
+
+    public function test_page_2_returns_the_correct_members(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+
+        $plan = MembershipPlan::factory()->create();
+        Member::factory()->count(15)->create(['membership_plan_id' => $plan->id]);
+
+        $response = $this->getJson('/api/members?page=2');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(5, 'data')
+            ->assertJsonPath('meta.current_page', 2)
+            ->assertJsonPath('meta.total', 15)
+            ->assertJsonPath('meta.last_page', 2);
+    }
+
+    public function test_sorting_by_full_name_returns_members_in_ascending_order(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+
+        $plan = MembershipPlan::factory()->create();
+        Member::factory()->create(['full_name' => 'zed', 'membership_plan_id' => $plan->id]);
+        Member::factory()->create(['full_name' => 'amir', 'membership_plan_id' => $plan->id]);
+        Member::factory()->create(['full_name' => 'yas', 'membership_plan_id' => $plan->id]);
+
+        $response = $this->getJson('/api/members?sort=full_name');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.0.full_name', 'amir')
+            ->assertJsonPath('data.1.full_name', 'yas')
+            ->assertJsonPath('data.2.full_name', 'zed');
+    }
+
+    public function test_sorting_by_full_name_returns_members_in_descending_order(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+
+        $plan = MembershipPlan::factory()->create();
+        Member::factory()->create(['full_name' => 'zed', 'membership_plan_id' => $plan->id]);
+        Member::factory()->create(['full_name' => 'yas', 'membership_plan_id' => $plan->id]);
+        Member::factory()->create(['full_name' => 'amir', 'membership_plan_id' => $plan->id]);
+
+        $response = $this->getJson('/api/members?sort=-full_name');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.0.full_name', 'zed')
+            ->assertJsonPath('data.1.full_name', 'yas')
+            ->assertJsonPath('data.2.full_name', 'amir');
+    }
+
+    public function test_invalid_sort_parameter_returns_422(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+        $response = $this->getJson('/api/members?sort=invalid_column');
+        $response->assertStatus(422);
+    }
+
+    public function test_search_and_plan_combined_filters_return_correct_members(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+
+        $monthlyPlan = MembershipPlan::factory()->create(['name' => 'Monthly']);
+        $yearlyPlan = MembershipPlan::factory()->create(['name' => 'Yearly']);
+
+        Member::factory()->create(['full_name' => 'zed', 'membership_plan_id' => $monthlyPlan->id, 'status' => true]);
+        Member::factory()->create(['full_name' => 'zed', 'email' => 'zed@example.com', 'membership_plan_id' => $yearlyPlan->id, 'status' => true]);
+        Member::factory()->create(['full_name' => 'omar', 'membership_plan_id' => $monthlyPlan->id, 'status' => true]);
+
+        $response = $this->getJson('/api/members?search=zed&plan=Monthly');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.full_name', 'zed')
+            ->assertJsonMissingExact(['full_name' => 'zed', 'membership_plan_id' => $yearlyPlan->id])
+            ->assertJsonMissingExact(['full_name' => 'omar']);
+    }
+
+    public function test_query_string_parameters_are_preserved_in_pagination_links(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+
+        $plan = MembershipPlan::factory()->create(['name' => 'Monthly']);
+        Member::factory()->count(15)->create(['full_name' => 'zed', 'membership_plan_id' => $plan->id, 'status' => true]);
+
+        $response = $this->getJson('/api/members?search=zed&plan=Monthly&page=1');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('links.next', url('/api/members?search=zed&plan=Monthly&page=2'));
+    }
 }
