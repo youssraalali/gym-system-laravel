@@ -16,10 +16,10 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
 
-        if ($request->expectsJson()) {
-                return response()->json(['message' => 'Unauthorized'], 401);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
             return redirect()->route('login')->with('message', 'Please log in to access this page.');
@@ -28,7 +28,7 @@ class CheckRole
 
         if (Auth::user()->role !== $role) {
 
-        if ($request->expectsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
 
@@ -36,8 +36,7 @@ class CheckRole
 
             return redirect()->route($redirectRoute)->with('error', 'You do not have permission to access this page.');
 
-            }
-
+        }
 
         return $next($request);
     }

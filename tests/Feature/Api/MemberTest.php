@@ -317,4 +317,53 @@ class MemberTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('links.next', url('/api/members?search=zed&plan=Monthly&page=2'));
     }
+
+    public function test_member_does_not_exist_returns_404(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+        $response = $this->getJson('/api/members/9999');
+        $response->assertStatus(404)
+            ->assertExactJson([
+                'message' => 'Resource not found',
+            ]);
+    }
+
+    public function test_non_admin_user_request_member_list_returns_403(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'member']), ['*']);
+        $response = $this->getJson('/api/members');
+        $response->assertStatus(403)
+            ->assertExactJson([
+                'message' => 'Forbidden',
+            ]);
+    }
+
+    public function test_non_logged_in_user_request_member_list_returns_401(): void
+    {
+        $this->app['auth']->forgetGuards();
+        $response = $this->getJson('/api/members');
+        $response->assertStatus(401)
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
+    }
+
+    public function test_missing_required_field_in_create_member_request_returns_422(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']), ['*']);
+        $plan = MembershipPlan::factory()->create();
+        $payload = [
+            'full_name' => '',
+            'email' => 'test@example.com',
+            'phone_number' => '1777777777',
+            'membership_start_date' => '12-12-2023',
+            'membership_plan_id' => $plan->id,
+        ];
+        $response = $this->postJson('/api/members', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('full_name');
+
+        $this->assertDatabaseMissing('members', ['email' => 'test@example.com']);
+    }
 }
