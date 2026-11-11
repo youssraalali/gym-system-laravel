@@ -362,7 +362,12 @@ class MemberTest extends TestCase
         $response = $this->postJson('/api/members', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors('full_name');
+            ->assertExactJsonStructure([
+                'message',
+                'errors' => [
+                    'full_name',
+                ],
+            ]);
 
         $this->assertDatabaseMissing('members', ['email' => 'test@example.com']);
     }
